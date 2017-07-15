@@ -1,0 +1,17 @@
+from multiprocessing import Pool
+import pymongo
+from channel_extract import channel_list
+from page_parsing import get_links_from
+
+
+
+client = pymongo.MongoClient("localhost",27017)
+ceshi = client["douyu"]
+url_list = ceshi["url_list"]
+item_info = ceshi["item_info"]
+
+
+
+if __name__ == "__main__":
+    pool = Pool(processes=20)
+    pool.map(get_links_from,channel_list.split())
