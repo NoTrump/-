@@ -1,0 +1,61 @@
+from bs4 import BeautifulSoup
+import urllib.request,time,pymongo
+import time
+import re,random
+
+client = pymongo.MongoClient("localhost",27017)
+ceshi = client["douyu"]
+url_list = ceshi["url_list"]
+item_info = ceshi["item_info"]
+
+
+
+
+def url_open(url):
+    iplist = ["118.123.245.152:3128","106.46.136.44:808","182.47.192.128:9999","106.46.136.157:808","117.89.10.230:9999","114.228.178.241:9999","111.76.129.223:808"]
+    proxy_support = urllib.request.ProxyHandler({"http":random.choice(iplist)})
+    opener = urllib.request.build_opener(proxy_support)
+    opener.addheaders = [('User-Agent','Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36')]
+    urllib.request.install_opener(opener)
+    reques=urllib.request.urlopen(url)
+    html=reques.read().decode('utf-8',errors='replace')
+    return html
+
+def get_links_from(channel):
+    list_view = channel
+
+    soup = BeautifulSoup(url_open(list_view),"lxml")
+
+    url_list = [x.get("href") for x in soup.select("ul li a.thumb")]
+    first_title = channel.split("/")[-1]
+    for url in url_list:
+        time.sleep(2)
+        gameurl = "https://www.douyu.com"+url
+        like = BeautifulSoup(url_open(gameurl), "lxml")
+        zhubos = [x.text for x in like.select("span.dy-name.ellipsis.fl")]
+        guanzhongs =[x.text for x in like.select("span.dy-num.fr")]
+        second_titles =[x.text for x in like.select("span.tag.ellipsis")]
+        for zhubo,guanzhong,second_title in zip(zhubos,guanzhongs,second_titles):
+            if re.findall(r"万",guanzhong):
+                a2 = float(guanzhong.split("万")[0])
+
+                renshu = a2*10000
+
+            else:
+                renshu = guanzhong
+            data = {"zhubo":zhubo,"renshu":renshu,"first_title":first_title,"second_title":second_title}
+            print(data)
+            item_info.insert_one({"zhubo":zhubo,"renshu":renshu,"first_title":first_title,"second_title":second_title})
+
+
+
+
+
+
+
+
+
+
+
+
+
