@@ -1,0 +1,23 @@
+from bs4 import BeautifulSoup
+import urllib.request
+
+start_url = "http://home.mercadolibre.com.ve/vehiculos-accesorios/"
+url_host = "http://bj.58.com"
+
+def get_channel_urls(url):
+    wb_data = urllib.request.urlopen(start_url)
+    html = wb_data.read()
+    soup = BeautifulSoup(html,"lxml")
+    links = soup.select("h2 a ")
+    for link in links:
+        page_url = link.get("href")
+        print(page_url)
+
+
+
+channel_list = '''
+https://www.douyu.com/directory/category/game
+https://www.douyu.com/directory/category/ydyx
+https://www.douyu.com/directory/category/ylxtd
+https://www.douyu.com/directory/category/kj
+'''
